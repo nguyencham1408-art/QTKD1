@@ -1,0 +1,45 @@
+{
+  "company_name": "Công ty Gia dụng Đại Thành",
+  "credit_policy": {
+    "tier_1_distributor": {
+      "max_credit_limit_vnd": 2000000000,
+      "max_grace_period_days": 30,
+      "min_monthly_purchase_vnd": 500000000,
+      "required_collateral": true
+    },
+    "tier_2_dealer": {
+      "max_credit_limit_vnd": 500000000,
+      "max_grace_period_days": 15,
+      "min_monthly_purchase_vnd": 100000000,
+      "required_collateral": false
+    },
+    "new_partner_probation": {
+      "max_credit_limit_vnd": 100000000,
+      "max_grace_period_days": 7,
+      "payment_terms": "100% thanh toán trước đơn hàng đầu tiên; đơn hàng thứ 2 áp dụng gối đầu tối đa 7 ngày"
+    }
+  },
+  "territory_policy": {
+    "protected_radius_km": {
+      "urban_dense": 2.0,
+      "urban_normal": 3.0,
+      "suburban_rural": 5.0
+    },
+    "exclusive_partner_rights": "Mỗi quận/huyện ngoại thành tối đa 1 Tổng đại lý độc quyền; nội thành áp dụng bán kính bảo hộ điểm bán tối thiểu 2km.",
+    "conflict_rule": "Nếu điểm bán ứng viên nằm trong bán kính bảo hộ của đối tác hiện tại, bắt buộc phải có văn bản chấp thuận của đối tác hiện tại hoặc từ chối điểm bán đó."
+  },
+  "service_warranty_policy": {
+    "min_technicians_per_store": 2,
+    "max_sla_repair_hours": 48,
+    "mandatory_spare_parts_storage_sqm": 15,
+    "requirement": "Phải có trạm bảo hành hoặc hợp đồng liên kết trung tâm kỹ thuật được Đại Thành chứng nhận."
+  },
+  "scoring_weights": {
+    "territory_feasibility": 0.25,
+    "financial_and_credit": 0.25,
+    "service_warranty_capacity": 0.20,
+    "purchase_plan_credibility": 0.20,
+    "trade_support_fit": 0.10
+  }
+}
+

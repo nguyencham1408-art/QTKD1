@@ -1,0 +1,62 @@
+[
+  {
+    "partner_id": "PARTNER-001",
+    "name": "Công ty TNHH Thương mại Phúc Thịnh",
+    "tax_id": "0108992111",
+    "legal_representative": "Nguyễn Văn Phúc",
+    "phone": "0912345678",
+    "region": "Khu vực 1 (Miền Bắc)",
+    "tier": "tier_1_distributor",
+    "status": "active",
+    "stores": [
+      {
+        "store_id": "ST-001-A",
+        "name": "Showroom Phúc Thịnh Cầu Giấy",
+        "address": "120 Cầu Giấy, Phường Quan Hoa, Quận Cầu Giấy, Hà Nội",
+        "lat": 21.0356,
+        "lng": 105.7942,
+        "protected_radius_km": 2.0
+      },
+      {
+        "store_id": "ST-001-B",
+        "name": "Showroom Phúc Thịnh Hà Đông",
+        "address": "45 Quang Trung, Phường Quang Trung, Quận Hà Đông, Hà Nội",
+        "lat": 20.9712,
+        "lng": 105.7765,
+        "protected_radius_km": 2.0
+      }
+    ]
+  },
+  {
+    "partner_id": "PARTNER-002",
+    "name": "Công ty CP Đầu tư & Gia dụng Việt Hưng",
+    "tax_id": "0314567890",
+    "legal_representative": "Lê Hoàng Hưng",
+    "phone": "0908889999",
+    "region": "Khu vực 2 (Miền Trung)",
+    "tier": "tier_1_distributor",
+    "status": "active",
+    "stores": [
+      {
+        "store_id": "ST-002-A",
+        "name": "Trung tâm Điện máy Việt Hưng Đà Nẵng",
+        "address": "250 Nguyễn Tri Phương, Quận Thanh Khê, Đà Nẵng",
+        "lat": 16.0592,
+        "lng": 108.2045,
+        "protected_radius_km": 2.0
+      }
+    ]
+  },
+  {
+    "partner_id": "PARTNER-003",
+    "name": "Doanh nghiệp Tư nhân Điện máy Hoàng Gia (Cũ)",
+    "tax_id": "0309988776",
+    "legal_representative": "Trần Văn Toàn",
+    "phone": "0933221100",
+    "region": "Khu vực 3 (Miền Nam)",
+    "tier": "tier_2_dealer",
+    "status": "blacklisted_bad_debt",
+    "notes": "Từng phát sinh nợ quá hạn 180 ngày năm 2024, vi phạm bán phá giá."
+  }
+]
+

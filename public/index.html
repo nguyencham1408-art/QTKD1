@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ĐẠI THÀNH AI OS &bull; Phân Phối & Thẩm Định Đối Tác</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              900: '#4c1d95',
+            },
+            surface: {
+              base: '#07070b',
+              card: 'rgba(18, 17, 29, 0.75)',
+              elevated: 'rgba(28, 26, 44, 0.85)',
+              border: 'rgba(255, 255, 255, 0.08)',
+            }
+          },
+          boxShadow: {
+            'glow-purple': '0 0 50px -10px rgba(139, 92, 246, 0.25)',
+            'glow-cyan': '0 0 40px -10px rgba(6, 182, 212, 0.25)',
+            'glow-card': '0 20px 40px -15px rgba(0, 0, 0, 0.7)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #07070b;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #07070b; }
+    ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); }
+
+    /* Glassmorphism Styles */
+    .glass-card {
+      background: rgba(18, 17, 29, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    }
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(167, 139, 250, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -10px rgba(124, 58, 237, 0.2);
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Pulsing animations */
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.96); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Gradient Text */
+    .gradient-text-purple {
+      background: linear-gradient(135deg, #ffffff 30%, #c4b5fd 70%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-text-amber {
+      background: linear-gradient(135deg, #fef08a 0%, #facc15 60%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Leaflet Dark Theme Overrides */
+    #territory-map {
+      height: 440px;
+      border-radius: 1rem;
+      background: #090910;
+    }
+    .leaflet-tile {
+      filter: brightness(0.85) contrast(1.1) invert(0.95) hue-rotate(185deg) saturate(0.6);
+    }
+    .leaflet-container {
+      background-color: #08080f !important;
+    }
+    .leaflet-popup-content-wrapper {
+      background: rgba(18, 17, 29, 0.9) !important;
+      color: #f1f5f9 !important;
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.75rem !important;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8) !important;
+    }
+    .leaflet-popup-tip {
+      background: rgba(18, 17, 29, 0.9) !important;
+    }
+
+    /* Background Canvas */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white !important; color: black !important; }
+      body * { visibility: hidden; }
+      #printable-report, #printable-report * { visibility: visible; }
+      #printable-report { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-purple-600 selection:text-white relative">
+
+  <!-- Interactive Particles / Neural Net Ambient Canvas (Like Nously & Kin) -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Ambient Glow Blobs -->
+  <div class="fixed top-[-150px] left-1/2 -translate-x-1/2 w-[700px] h-[450px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none z-0"></div>
+  <div class="fixed top-[40%] right-[-100px] w-[500px] h-[400px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-100px] left-[-100px] w-[550px] h-[400px] bg-cyan-600/10 rounded-full blur-[130px] pointer-events-none z-0"></div>
+
+  <!-- FLOATING TOP NAVIGATION BAR (Kin OS Pill Island Style) -->
+  <nav class="sticky top-4 z-50 px-4 sm:px-6 w-full max-w-7xl mx-auto">
+    <div class="glass-pill px-4 py-2.5 rounded-full flex justify-between items-center shadow-glow-purple border border-white/10 transition-all duration-300">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-purple-400/50 shadow-lg shadow-purple-600/30 shrink-0 bg-purple-950">
+          <img src="/assets/ai_robot.jpg" alt="AI Buddy" class="w-full h-full object-cover">
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-extrabold text-sm tracking-tight text-white font-mono">ĐẠI THÀNH</span>
+          <span class="text-[11px] text-purple-400 font-mono tracking-wider px-2 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/25">
+            AI AGENT OS
+          </span>
+        </div>
+      </div>
+
+      <!-- Island Center Pills (Status Indicators) -->
+      <div class="hidden md:flex items-center space-x-2 text-xs font-medium text-slate-300">
+        <div class="glass-pill px-3 py-1.5 rounded-full flex items-center space-x-2 text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-[11px] font-mono" id="live-clock">12:00:00</span>
+        </div>
+        <div class="glass-pill px-3 py-1.5 rounded-full flex items-center space-x-2 text-purple-200">
+          <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+          <span class="text-[11px]">Multi-Agent Listening</span>
+        </div>
+        <button onclick="toggleWeightModal()" class="glass-pill hover:bg-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full text-[11px] transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-sliders text-purple-400"></i>
+          <span>Trọng số</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2.5">
+        <button onclick="openNewModal()" class="glass-pill hover:bg-white/10 text-white font-medium px-4 py-1.5 rounded-full text-xs transition duration-200 flex items-center space-x-1.5 border border-white/15">
+          <i class="fa-solid fa-plus text-purple-400 text-[11px]"></i>
+          <span>Nhập hồ sơ</span>
+        </button>
+
+        <button onclick="runEvaluation()" id="btn-eval" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold px-4 py-1.5 rounded-full text-xs transition duration-300 shadow-lg shadow-purple-600/30 flex items-center space-x-1.5 border border-purple-400/30 active:scale-95">
+          <i class="fa-solid fa-bolt text-amber-300 text-[11px]"></i>
+          <span>Chạy Thẩm Định</span>
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8 relative z-10">
+
+    <!-- HERO SECTION WITH GLOWING BRAIN VISUAL (Nously / Kin Style) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2 pb-6">
+      
+      <!-- Left Column: Copy & Value Proposition -->
+      <div class="lg:col-span-7 space-y-5 text-left">
+        <div class="inline-flex items-center space-x-2.5 glass-pill px-3.5 py-1 rounded-full text-xs font-mono text-purple-300 border border-purple-500/30">
+          <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+          <span>MẠNG LƯỚI PHÂN PHỐI GIA DỤNG 3 MIỀN</span>
+        </div>
+        
+        <h1 class="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight gradient-text-purple leading-[1.15] font-sans">
+          Thẩm Định & Mở Rộng Đối Tác Bằng Trí Tuệ Nhân Tạo
+        </h1>
+        
+        <p class="text-sm sm:text-base text-slate-400 leading-relaxed max-w-xl">
+          Tự động đối soát dữ liệu liên phòng ban: bóc tách nguy cơ <span class="text-purple-300 font-semibold">xung đột địa bàn 2km</span>, 
+          ngăn chặn <span class="text-purple-300 font-semibold">cam kết doanh số ảo</span> đòi công nợ vượt trần và thẩm định 
+          <span class="text-purple-300 font-semibold">năng lực trạm bảo hành gia dụng</span>.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button onclick="runEvaluation()" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-bold px-6 py-3 rounded-full text-xs transition duration-300 shadow-lg shadow-purple-600/40 flex items-center space-x-2 border border-purple-400/40 hover:scale-[1.02] active:scale-95">
+            <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
+            <span>Kích Hoạt AI Thẩm Định Toàn Bộ</span>
+          </button>
+          
+          <button onclick="openNewModal()" class="glass-pill hover:bg-white/10 text-slate-200 hover:text-white font-semibold px-5 py-3 rounded-full text-xs transition flex items-center space-x-2 border border-white/15 hover:scale-[1.02]">
+            <i class="fa-solid fa-file-circle-plus text-purple-400"></i>
+            <span>Nhập Hồ Sơ Mới</span>
+          </button>
+        </div>
+
+        <!-- Metric micro-badges -->
+        <div class="flex items-center space-x-6 pt-3 text-xs font-mono text-slate-400 border-t border-white/10">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-microchip text-purple-400"></i>
+            <span>4 Agent Độc Lập</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+            <span>Bảo Hộ GPS 2km</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
+            <span>Gemini 3.8 Flash</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Glowing 3D Particle Brain Visual Card (Image 2 Nously Style) -->
+      <div class="lg:col-span-5 relative flex justify-center">
+        <div class="relative w-full max-w-[420px] aspect-square rounded-3xl overflow-hidden glass-card p-2.5 border border-purple-500/30 shadow-[0_0_60px_-10px_rgba(168,85,247,0.35)] group">
+          
+          <!-- Glowing background behind image -->
+          <div class="absolute inset-0 bg-gradient-to-tr from-purple-600/20 via-transparent to-indigo-600/20 pointer-events-none"></div>
+          
+          <img src="/assets/ai_brain.jpg" alt="AI Neural Brain Network" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-700">
+          
+          <!-- Floating Badge Top Left: Neural Active -->
+          <div class="absolute top-5 left-5 glass-pill px-3 py-1.5 rounded-full text-[11px] font-mono text-purple-300 border border-purple-400/30 flex items-center space-x-2 backdrop-blur-xl">
+            <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+            <span>Neural Distribution Net</span>
+          </div>
+
+          <!-- Floating Badge Bottom Right: 0.1s / Hồ sơ -->
+          <div class="absolute bottom-5 right-5 glass-pill px-3.5 py-2 rounded-2xl text-[11px] font-mono text-white border border-white/20 backdrop-blur-xl shadow-2xl flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-xs">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-400 uppercase">Tốc độ AI</div>
+              <div class="font-bold text-emerald-400">0.1s / Hồ Sơ</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BENTO GRID: STATS CARDS (Kin OS / Nously Dark Aesthetic) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Total -->
+      <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-purple-600/10 rounded-full blur-xl group-hover:bg-purple-600/20 transition-all"></div>
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Tổng Số Hồ Sơ</p>
+          <span class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 text-xs">
+            <i class="fa-regular fa-folder-open"></i>
+          </span>
+        </div>
+        <div class="mt-3 flex items-baseline space-x-2">
+          <h3 id="stat-total" class="text-3xl font-extrabold text-white font-mono tracking-tight">--</h3>
+          <span class="text-xs text-slate-500">hồ sơ tháng</span>
+        </div>
+        <div class="mt-2 text-[11px] text-purple-400/80 flex items-center">
+          <i class="fa-solid fa-layer-group mr-1.5 text-[10px]"></i> Đợt tuyển 3 khu vực
+        </div>
+      </div>
+
+      <!-- Approved -->
+      <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group border-emerald-500/20">
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Ưu Tiên Ký HĐ</p>
+          <span class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs">
+            <i class="fa-solid fa-check"></i>
+          </span>
+        </div>
+        <div class="mt-3 flex items-baseline space-x-2">
+          <h3 id="stat-approved" class="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">--</h3>
+          <span class="text-xs text-slate-500">đạt chuẩn</span>
+        </div>
+        <div class="mt-2 text-[11px] text-emerald-400/80 flex items-center">
+          <i class="fa-solid fa-shield-check mr-1.5 text-[10px]"></i> Đủ tiêu chuẩn pháp lý & kỹ thuật
+        </div>
+      </div>
+
+      <!-- Conditional -->
+      <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group border-amber-500/20">
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono uppercase tracking-wider text-amber-400">Chờ Xác Minh</p>
+          <span class="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 text-xs">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+        </div>
+        <div class="mt-3 flex items-baseline space-x-2">
+          <h3 id="stat-conditional" class="text-3xl font-extrabold text-amber-400 font-mono tracking-tight">--</h3>
+          <span class="text-xs text-slate-500">cần điều kiện</span>
+        </div>
+        <div class="mt-2 text-[11px] text-amber-400/80 flex items-center">
+          <i class="fa-solid fa-location-crosshairs mr-1.5 text-[10px]"></i> Thẩm định hiện trường & đàm phán
+        </div>
+      </div>
+
+      <!-- Rejected -->
+      <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group border-rose-500/20">
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all"></div>
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono uppercase tracking-wider text-rose-400">Từ Chối / Vi Phạm</p>
+          <span class="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="mt-3 flex items-baseline space-x-2">
+          <h3 id="stat-rejected" class="text-3xl font-extrabold text-rose-400 font-mono tracking-tight">--</h3>
+          <span class="text-xs text-slate-500">bị loại</span>
+        </div>
+        <div class="mt-2 text-[11px] text-rose-400/80 flex items-center">
+          <i class="fa-solid fa-ban mr-1.5 text-[10px]"></i> Xung đột địa bàn / Trùng Blacklist
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GIS TERRITORY RADAR MAP (Nously Dark Radar Style) -->
+    <div class="glass-card p-6 rounded-3xl space-y-4 relative overflow-hidden border border-white/10 shadow-glow-purple">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/5 gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+            <h2 class="text-base font-bold text-white tracking-tight flex items-center">
+              Radar Bảo Hộ Địa Bàn & Giám Sát Xung Đột Kênh (2.0 km)
+            </h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Mô phỏng GIS bán kính bảo hộ đại lý hiện có và tự động phát hiện các điểm mở mới vi phạm khoảng cách an toàn.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 text-xs font-mono">
+          <span class="flex items-center text-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block mr-1.5 shadow-[0_0_8px_#6366f1]"></span>
+            Đại lý hiện hữu
+          </span>
+          <span class="flex items-center text-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/40 border border-rose-500 inline-block mr-1.5"></span>
+            Vành đai bảo hộ (2km)
+          </span>
+          <span class="flex items-center text-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block mr-1.5 shadow-[0_0_8px_#34d399]"></span>
+            Hồ sơ an toàn
+          </span>
+          <span class="flex items-center text-rose-400 font-semibold">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block mr-1.5 animate-pulse shadow-[0_0_8px_#f43f5e]"></span>
+            Xung đột (&lt;2km)
+          </span>
+        </div>
+      </div>
+      
+      <!-- Leaflet Dark Map Container -->
+      <div class="relative overflow-hidden rounded-2xl border border-white/10">
+        <div id="territory-map"></div>
+      </div>
+    </div>
+
+    <!-- MAIN EVALUATION SCORECARD TABLE -->
+    <div class="glass-card rounded-3xl overflow-hidden border border-white/10 shadow-glow-card">
+      
+      <!-- Table Header Bar -->
+      <div class="px-6 py-4 border-b border-white/5 flex flex-col sm:flex-row justify-between sm:items-center bg-white/[0.02] gap-3">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-tight flex items-center">
+            <i class="fa-solid fa-list-check text-purple-400 mr-2 text-sm"></i>
+            Hồ Sơ Đang Chờ Phê Duyệt & Checklist Xác Minh
+          </h2>
+          <p class="text-xs text-slate-400">Bộ tiêu chuẩn: Pháp nhân &bull; Địa bàn &bull; Trần công nợ &bull; SLA kỹ thuật &bull; Doanh số</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="viewPoliciesModal()" class="glass-pill hover:bg-white/10 text-slate-300 hover:text-white px-3.5 py-1.5 rounded-full text-xs transition font-mono flex items-center space-x-1.5">
+            <i class="fa-solid fa-scale-balanced text-purple-400"></i>
+            <span>Chính sách</span>
+          </button>
+          <button onclick="viewExistingPartnersModal()" class="glass-pill hover:bg-white/10 text-slate-300 hover:text-white px-3.5 py-1.5 rounded-full text-xs transition font-mono flex items-center space-x-1.5">
+            <i class="fa-solid fa-store text-indigo-400"></i>
+            <span>CSDL Đại lý</span>
+          </button>
+          <span id="eval-status" class="glass-pill text-xs font-mono text-purple-300 px-3.5 py-1.5 rounded-full border border-purple-500/30">
+            Đang tải dữ liệu...
+          </span>
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-white/5 text-sm text-left">
+          <thead class="bg-white/[0.02] text-slate-400 font-mono text-xs uppercase tracking-wider">
+            <tr>
+              <th class="px-6 py-4">Mã & Đối Tác</th>
+              <th class="px-6 py-4">Khu Vực & Điểm Bán</th>
+              <th class="px-6 py-4">Cam Kết / Công Nợ</th>
+              <th class="px-6 py-4">Năng Lực Kỹ Thuật</th>
+              <th class="px-6 py-4 text-center">Điểm AI</th>
+              <th class="px-6 py-4 text-center">Đề Xuất Phê Duyệt</th>
+              <th class="px-6 py-4 text-right">Chi Tiết</th>
+            </tr>
+          </thead>
+          <tbody id="candidates-table-body" class="divide-y divide-white/5 font-sans">
+            <!-- Dynamic rows will be rendered here -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL: APPLICATION DETAIL & GEMINI STRATEGIC MEMO (Kin / Nously Glass Console) -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-[#0d0c18]/95 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-white/15">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4.5 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <div class="flex items-center space-x-3">
+          <span id="modal-badge" class="px-3 py-1 text-xs rounded-full font-mono font-bold tracking-wide"></span>
+          <h3 id="modal-title" class="text-base sm:text-lg font-bold text-white font-sans"></h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="printExecutiveReport()" class="glass-pill hover:bg-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition flex items-center space-x-1.5 border border-white/15">
+            <i class="fa-solid fa-print text-purple-400"></i>
+            <span>In Tờ trình</span>
+          </button>
+          <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full glass-pill hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content Area -->
+      <div id="modal-content" class="p-6 overflow-y-auto space-y-6 text-sm">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 bg-black/40 border-t border-white/10 flex justify-between items-center text-xs text-slate-400">
+        <span class="font-mono">Tự động tổng hợp bởi Đại Thành Multi-Agent OS</span>
+        <button onclick="closeDetailModal()" class="px-4 py-1.5 glass-pill hover:bg-white/10 text-white rounded-full font-medium transition">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: NEW CANDIDATE WITH GEMINI TEXT EXTRACTOR (Dark Futuristic Form) -->
+  <div id="new-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-[#0d0c18]/95 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-white/15">
+      
+      <!-- Header -->
+      <div class="px-6 py-4.5 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-7 h-7 rounded-full bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-400 text-xs">
+            <i class="fa-solid fa-file-circle-plus"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Tiếp Nhận Hồ Sơ Đại Lý Mới</h3>
+        </div>
+        <button onclick="closeNewModal()" class="w-8 h-8 rounded-full glass-pill hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Tabs: AI Raw Text vs Form -->
+      <div class="flex border-b border-white/10 bg-black/30 px-6 pt-3 space-x-3 text-xs font-mono">
+        <button onclick="switchInputMode('text')" id="tab-text" class="pb-2.5 border-b-2 border-purple-500 text-purple-400 font-bold flex items-center space-x-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Dán Văn bản / Email (Gemini AI Trích xuất)</span>
+        </button>
+        <button onclick="switchInputMode('form')" id="tab-form" class="pb-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5">
+          <i class="fa-solid fa-table-list"></i>
+          <span>Nhập Thủ Công</span>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <div class="p-6 overflow-y-auto space-y-4 text-sm">
+        
+        <!-- Text Extraction Area -->
+        <div id="section-ai-text" class="space-y-3">
+          <label class="block text-xs font-mono uppercase text-slate-400">
+            Dán nội dung email hoặc tóm tắt hồ sơ đối tác dạng văn bản thô:
+          </label>
+          <textarea id="raw-applicant-text" rows="5" class="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-xs text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent font-sans leading-relaxed outline-none" placeholder="Ví dụ: Công ty TNHH Bếp Hoàng Gia, MST 0109988776 do ông Nguyễn Văn Hòa đại diện. Điểm bán tại 280 Xã Đàn, Đống Đa, Hà Nội (120m2). Cam kết mua 450 triệu/tháng các sản phẩm bếp từ, hút mùi. Đề xuất công nợ 120 triệu gối đầu 10 ngày. Đội ngũ có 3 kỹ thuật viên bảo hành đạt chuẩn..."></textarea>
+          
+          <div class="flex justify-between items-center">
+            <button type="button" onclick="loadSampleText()" class="text-xs text-purple-400 hover:text-purple-300 font-mono flex items-center space-x-1">
+              <i class="fa-regular fa-lightbulb"></i>
+              <span>Tải văn bản mẫu</span>
+            </button>
+            <button type="button" onclick="parseRawTextWithAI()" id="btn-parse-text" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-lg shadow-purple-600/20 flex items-center space-x-1.5 transition">
+              <i class="fa-solid fa-bolt text-amber-300 text-[11px]"></i>
+              <span>AI Trích xuất thông tin</span>
+            </button>
+          </div>
+        </div>
+
+        <form id="new-candidate-form" onsubmit="submitNewCandidate(event)" class="space-y-3 pt-3 border-t border-white/10">
+          <div>
+            <label class="block text-[11px] font-mono uppercase text-slate-400">Tên Doanh nghiệp / Hộ kinh doanh</label>
+            <input type="text" id="new-name" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: Công ty TNHH Điện Máy Việt Long">
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Mã số thuế</label>
+              <input type="text" id="new-tax" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 0108899222">
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Người đại diện</label>
+              <input type="text" id="new-rep" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: Nguyễn Văn Long">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-mono uppercase text-slate-400">Địa chỉ Điểm bán dự kiến</label>
+            <input type="text" id="new-address" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 15 Giải Phóng, Hai Bà Trưng, Hà Nội">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Cam kết Nhập (VNĐ/tháng)</label>
+              <input type="number" id="new-purchase" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 400000000">
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Đề xuất công nợ (VNĐ)</label>
+              <input type="number" id="new-credit" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 100000000">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Số ngày gối đầu</label>
+              <input type="number" id="new-grace" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 7">
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-slate-400">Số thợ kỹ thuật bảo hành</label>
+              <input type="number" id="new-tech" required class="w-full mt-1 bg-black/40 border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:ring-2 focus:ring-purple-500 outline-none" placeholder="VD: 2">
+            </div>
+          </div>
+
+          <div class="pt-3">
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-full text-xs shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-2 transition duration-200">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+              <span>Gửi Hồ Sơ & AI Thẩm Định Ngay</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: WEIGHT TUNING -->
+  <div id="weight-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-[#0d0c18]/95 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-white/15 space-y-4">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <h3 class="text-sm font-bold text-white font-mono flex items-center">
+          <i class="fa-solid fa-sliders text-purple-400 mr-2"></i>
+          Trọng Số Scorecard Thẩm Định
+        </h3>
+        <button onclick="toggleWeightModal()" class="w-7 h-7 rounded-full glass-pill hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5 text-xs font-mono">
+        <div>
+          <div class="flex justify-between font-semibold mb-1 text-slate-300">
+            <span>Địa bàn & Điểm bán</span>
+            <span id="val-w-territory" class="text-purple-400">25%</span>
+          </div>
+          <input type="range" id="w-territory" min="10" max="40" value="25" oninput="updateWeights()" class="w-full accent-purple-500">
+        </div>
+        <div>
+          <div class="flex justify-between font-semibold mb-1 text-slate-300">
+            <span>Tài chính & Công nợ</span>
+            <span id="val-w-credit" class="text-purple-400">25%</span>
+          </div>
+          <input type="range" id="w-credit" min="10" max="40" value="25" oninput="updateWeights()" class="w-full accent-purple-500">
+        </div>
+        <div>
+          <div class="flex justify-between font-semibold mb-1 text-slate-300">
+            <span>Vận hành & Bảo hành</span>
+            <span id="val-w-service" class="text-purple-400">20%</span>
+          </div>
+          <input type="range" id="w-service" min="10" max="40" value="20" oninput="updateWeights()" class="w-full accent-purple-500">
+        </div>
+        <div>
+          <div class="flex justify-between font-semibold mb-1 text-slate-300">
+            <span>Kế hoạch Doanh số</span>
+            <span id="val-w-purchase" class="text-purple-400">20%</span>
+          </div>
+          <input type="range" id="w-purchase" min="10" max="40" value="20" oninput="updateWeights()" class="w-full accent-purple-500">
+        </div>
+        <div>
+          <div class="flex justify-between font-semibold mb-1 text-slate-300">
+            <span>Hỗ trợ Thương mại</span>
+            <span id="val-w-support" class="text-purple-400">10%</span>
+          </div>
+          <input type="range" id="w-support" min="5" max="30" value="10" oninput="updateWeights()" class="w-full accent-purple-500">
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-white/10 flex justify-end">
+        <button onclick="toggleWeightModal()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-xs font-semibold shadow transition">
+          Áp dụng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: POLICIES -->
+  <div id="policies-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-[#0d0c18]/95 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-white/15">
+      <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <h3 class="text-sm font-bold text-white font-mono flex items-center">
+          <i class="fa-solid fa-scale-balanced mr-2 text-purple-400"></i> Quy Chuẩn Chính Sách Đại Thành
+        </h3>
+        <button onclick="closePoliciesModal()" class="w-7 h-7 rounded-full glass-pill hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div id="policies-content" class="p-6 overflow-y-auto text-xs space-y-4 font-sans leading-relaxed"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXISTING PARTNERS -->
+  <div id="partners-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-[#0d0c18]/95 rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-white/15">
+      <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <h3 class="text-sm font-bold text-white font-mono flex items-center">
+          <i class="fa-solid fa-store mr-2 text-indigo-400"></i> CSDL Đại Lý Hiện Hữu & Điểm Bán Bảo Hộ
+        </h3>
+        <button onclick="closePartnersModal()" class="w-7 h-7 rounded-full glass-pill hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div id="partners-content" class="p-6 overflow-y-auto text-xs space-y-4 font-sans"></div>
+    </div>
+  </div>
+
+  <!-- PRINTABLE MEMORANDUM -->
+  <div id="printable-report" class="hidden p-8 bg-white text-slate-900"></div>
+
+  <!-- FLOATING AI BUDDY ROBOT WIDGET (Image 3 Style) -->
+  <div id="ai-buddy-widget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    
+    <!-- Chat / Insight Popup Bubble -->
+    <div id="ai-buddy-chat" class="hidden mb-3 w-80 glass-card bg-[#131124]/95 p-4 rounded-3xl border border-purple-500/30 shadow-2xl space-y-3 backdrop-blur-2xl">
+      <div class="flex justify-between items-center pb-2.5 border-b border-white/10">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-7 h-7 rounded-full overflow-hidden border border-purple-400/50 bg-purple-950 shrink-0">
+            <img src="/assets/ai_robot.jpg" alt="AI Buddy" class="w-full h-full object-cover">
+          </div>
+          <div>
+            <div class="font-bold text-xs text-white">Đại Thành AI Buddy</div>
+            <div class="text-[10px] text-emerald-400 font-mono flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block mr-1 animate-pulse"></span>
+              Sẵn sàng trợ giúp
+            </div>
+          </div>
+        </div>
+        <button onclick="toggleBuddyChat()" class="w-6 h-6 rounded-full glass-pill flex items-center justify-center text-slate-400 hover:text-white text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-2 leading-relaxed font-sans">
+        <p class="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          👋 Chào bạn! Tôi là <strong>Personal AI Buddy</strong> của Phòng PTKD. Tôi hỗ trợ rà soát 30 hồ sơ đại lý, phát hiện điểm trùng lấn và soạn thảo kịch bản đàm phán hợp đồng.
+        </p>
+        
+        <div class="space-y-1.5 pt-1 font-mono text-[11px]">
+          <button onclick="openNewModal(); toggleBuddyChat();" class="w-full text-left p-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition flex items-center justify-between">
+            <span>&bull; Thêm hồ sơ mới (AI Tự trích xuất)</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+          <button onclick="runEvaluation(); toggleBuddyChat();" class="w-full text-left p-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition flex items-center justify-between">
+            <span>&bull; Quét lại toàn bộ xung đột địa bàn</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+          <button onclick="viewPoliciesModal(); toggleBuddyChat();" class="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition flex items-center justify-between">
+            <span>&bull; Tra cứu chính sách công nợ & bảo hộ</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trigger Button: Glowing 3D Robot Buddy -->
+    <button onclick="toggleBuddyChat()" class="group relative flex items-center space-x-3 p-1.5 pl-3.5 bg-gradient-to-r from-purple-950/90 via-[#181530] to-indigo-950/90 hover:from-purple-900 hover:to-indigo-900 rounded-full border border-purple-400/40 shadow-glow-purple backdrop-blur-xl transition-all duration-300 hover:scale-105 active:scale-95">
+      <div class="text-left hidden sm:block">
+        <div class="text-[11px] font-mono font-bold text-white">AI Buddy</div>
+        <div class="text-[9px] font-mono text-purple-400">Đại Thành Assistant</div>
+      </div>
+      <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-purple-400/60 shadow-lg shadow-purple-500/50 bg-purple-950 flex items-center justify-center">
+        <img src="/assets/ai_robot.jpg" alt="AI Buddy Robot" class="w-full h-full object-cover group-hover:scale-115 transition duration-300">
+        <span class="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#181530] animate-pulse"></span>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- JAVASCRIPT LOGIC & VISUAL ENGINE -->
+  <script>
+    let candidates = [];
+    let evaluations = [];
+    let policies = {};
+    let existingPartners = [];
+    let currentDetailIndex = 0;
+    let mapInstance = null;
+    let mapLayers = [];
+    let geminiApiKey = "AQ.Ab8RN6JG_ktABpSR9uNO8d569KfbgffTWgGHiSu2ycRsXPMbpQ";
+
+    // ----------------------------------------------------
+    // AI BUDDY CHAT TOGGLE (Image 3 Style)
+    // ----------------------------------------------------
+    function toggleBuddyChat() {
+      const chat = document.getElementById('ai-buddy-chat');
+      if (chat) {
+        chat.classList.toggle('hidden');
+      }
+    }
+
+    // ----------------------------------------------------
+    // BACKGROUND CANVAS: NEURAL/PARTICLE EFFECT (Kin / Nously)
+    // ----------------------------------------------------
+    function initCanvasParticles() {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+
+      const particles = [];
+      const count = Math.min(60, Math.floor(w / 25));
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 1.8 + 0.6,
+          color: Math.random() > 0.4 ? 'rgba(167, 139, 250, ' : 'rgba(99, 102, 241, '
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 140) {
+              const alpha = (1 - dist / 140) * 0.15;
+              ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw dots
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = h;
+
+          ctx.fillStyle = p.color + '0.6)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    // Live clock update
+    function updateClock() {
+      const now = new Date();
+      const el = document.getElementById('live-clock');
+      if (el) {
+        el.textContent = now.toTimeString().split(' ')[0];
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ----------------------------------------------------
+    // INITIALIZATION & API FETCH
+    // ----------------------------------------------------
+    async function init() {
+      initCanvasParticles();
+      try {
+        const [candRes, polRes, partRes, confRes] = await Promise.all([
+          fetch('/api/candidates'),
+          fetch('/api/policies'),
+          fetch('/api/partners'),
+          fetch('/api/config').catch(() => null)
+        ]);
+        candidates = await candRes.json();
+        policies = await polRes.json();
+        existingPartners = await partRes.json();
+        if (confRes) {
+          const conf = await confRes.json();
+          if (conf && conf.gemini_api_key) {
+            geminiApiKey = conf.gemini_api_key;
+          }
+        }
+
+        initMap();
+        await runEvaluation();
+      } catch (err) {
+        console.error('Lỗi tải dữ liệu ban đầu:', err);
+        const statusBadge = document.getElementById('eval-status');
+        statusBadge.textContent = 'Localhost Ready';
+        statusBadge.className = 'glass-pill text-xs font-mono text-purple-400 px-3.5 py-1.5 rounded-full border border-purple-500/30';
+      }
+    }
+
+    // ----------------------------------------------------
+    // MAP INITIALIZATION (CartoDB DarkMatter Style)
+    // ----------------------------------------------------
+    function initMap() {
+      if (mapInstance) return;
+      mapInstance = L.map('territory-map', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([21.0285, 105.8200], 12);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(mapInstance);
+
+      L.control.zoom({ position: 'bottomright' }).addTo(mapInstance);
+    }
+
+    function renderMapMarkers() {
+      if (!mapInstance) return;
+      mapLayers.forEach(l => mapInstance.removeLayer(l));
+      mapLayers = [];
+
+      // 1. Existing stores with protected glowing rings
+      existingPartners.forEach(p => {
+        if (p.stores) {
+          p.stores.forEach(s => {
+            const radMeters = (s.protected_radius_km || 2.0) * 1000;
+            const circle = L.circle([s.lat, s.lng], {
+              color: '#f43f5e',
+              fillColor: '#f43f5e',
+              fillOpacity: 0.08,
+              radius: radMeters,
+              weight: 1.2,
+              dashArray: '4, 4'
+            }).addTo(mapInstance);
+            circle.bindPopup(`
+              <div class="text-xs font-mono p-1">
+                <div class="text-rose-400 font-bold uppercase mb-0.5">Vành Đai Bảo Hộ (${s.protected_radius_km || 2.0} km)</div>
+                <div class="text-white font-semibold">${s.name}</div>
+                <div class="text-slate-400 mt-1">${s.address}</div>
+                <div class="text-purple-300 mt-1">Đại lý: ${p.name}</div>
+              </div>
+            `);
+            mapLayers.push(circle);
+
+            const marker = L.circleMarker([s.lat, s.lng], {
+              radius: 7,
+              fillColor: '#818cf8',
+              color: '#ffffff',
+              weight: 2,
+              fillOpacity: 1
+            }).addTo(mapInstance);
+            marker.bindPopup(`
+              <div class="text-xs p-1">
+                <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">ĐẠI LÝ HIỆN HỮU</span>
+                <div class="font-bold text-white mt-1.5">${s.name}</div>
+                <div class="text-slate-400 text-[11px] mt-0.5">${s.address}</div>
+              </div>
+            `);
+            mapLayers.push(marker);
+          });
+        }
+      });
+
+      // 2. Candidate stores
+      evaluations.forEach((evalItem, idx) => {
+        const cand = candidates.find(c => c.application_id === evalItem.application_id);
+        if (cand && cand.store_locations) {
+          cand.store_locations.forEach(store => {
+            if (store.lat && store.lng) {
+              const isConflict = evalItem.agent_findings.territory_check.has_conflict;
+              const color = isConflict ? '#f43f5e' : '#34d399';
+              const candMarker = L.circleMarker([store.lat, store.lng], {
+                radius: 8,
+                fillColor: color,
+                color: '#ffffff',
+                weight: 2,
+                fillOpacity: 1
+              }).addTo(mapInstance);
+
+              candMarker.bindPopup(`
+                <div class="text-xs p-1">
+                  <div class="font-bold text-white">${cand.company_name}</div>
+                  <div class="text-slate-400 text-[11px] mt-0.5">${store.address}</div>
+                  <div class="mt-2 font-mono text-[11px] font-semibold ${isConflict ? 'text-rose-400' : 'text-emerald-400'}">
+                    ${isConflict ? '⚠️ Vi phạm vành đai bảo hộ (<2km)' : '✅ Bán kính địa bàn an toàn'}
+                  </div>
+                  <button onclick="viewDetails(${idx})" class="mt-2.5 px-3 py-1 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:bg-purple-600/50 text-[11px] font-mono transition">
+                    Mở Báo Cáo AI &rarr;
+                  </button>
+                </div>
+              `);
+              mapLayers.push(candMarker);
+            }
+          });
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // EVALUATION PIPELINE
+    // ----------------------------------------------------
+    async function runEvaluation() {
+      const btn = document.getElementById('btn-eval');
+      const statusBadge = document.getElementById('eval-status');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang phân tích...';
+      statusBadge.textContent = 'Multi-Agent Running';
+      statusBadge.className = 'glass-pill text-xs font-mono text-purple-300 px-3.5 py-1.5 rounded-full border border-purple-500/40 animate-pulse';
+
+      try {
+        const res = await fetch('/api/evaluate-all');
+        evaluations = await res.json();
+        renderTable();
+        renderStats();
+        renderMapMarkers();
+
+        statusBadge.textContent = 'Thẩm Định Hoàn Tất';
+        statusBadge.className = 'glass-pill text-xs font-mono text-emerald-400 px-3.5 py-1.5 rounded-full border border-emerald-500/40';
+      } catch (e) {
+        console.error(e);
+        statusBadge.textContent = 'AI Offline';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-bolt text-amber-300 text-[11px] mr-1.5"></i> Chạy Thẩm Định';
+      }
+    }
+
+    function renderStats() {
+      const total = evaluations.length;
+      const approved = evaluations.filter(e => e.decision === 'APPROVED').length;
+      const conditional = evaluations.filter(e => e.decision === 'CONDITIONAL').length;
+      const rejected = evaluations.filter(e => e.decision === 'REJECTED').length;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-approved').textContent = approved;
+      document.getElementById('stat-conditional').textContent = conditional;
+      document.getElementById('stat-rejected').textContent = rejected;
+    }
+
+    // ----------------------------------------------------
+    // RENDER TABLE ROWS (Sleek Dark Cyber Cards)
+    // ----------------------------------------------------
+    function renderTable() {
+      const tbody = document.getElementById('candidates-table-body');
+      tbody.innerHTML = '';
+
+      evaluations.forEach((item, index) => {
+        const cand = candidates.find(c => c.application_id === item.application_id) || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/[0.03] transition-colors border-b border-white/5';
+
+        let badgePill = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        let badgeIcon = '<i class="fa-solid fa-circle-question mr-1 text-[10px]"></i>';
+        if (item.decision === 'APPROVED') {
+          badgePill = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          badgeIcon = '<i class="fa-solid fa-circle-check mr-1 text-[10px]"></i>';
+        } else if (item.decision === 'REJECTED') {
+          badgePill = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+          badgeIcon = '<i class="fa-solid fa-circle-xmark mr-1 text-[10px]"></i>';
+        }
+
+        const storeCount = cand.store_locations ? cand.store_locations.length : 1;
+        const mainAddress = cand.store_locations && cand.store_locations[0] ? cand.store_locations[0].address : 'Chưa cập nhật';
+        const committedVol = cand.purchase_plan ? (cand.purchase_plan.committed_monthly_volume_vnd / 1e6).toLocaleString('vi-VN') + ' tr/th' : '--';
+        const creditReq = cand.commercial_requests ? (cand.commercial_requests.credit_limit_requested_vnd / 1e6).toLocaleString('vi-VN') + ' tr' : '--';
+        const graceDays = cand.commercial_requests ? cand.commercial_requests.grace_period_days_requested + ' ngày' : '--';
+        const techCount = cand.warranty_service_capacity ? cand.warranty_service_capacity.technicians_count + ' thợ KT' : '--';
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-bold text-white tracking-tight">${item.company_name}</div>
+            <div class="text-xs text-slate-400 font-mono mt-0.5">
+              ${item.application_id} &bull; MST: <span class="text-purple-300">${item.tax_id}</span>
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">Đại diện: ${item.legal_rep}</div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-purple-300 border border-white/10 mb-1">
+              ${item.region}
+            </span>
+            <div class="text-xs text-slate-300 truncate max-w-xs flex items-center" title="${mainAddress}">
+              <i class="fa-solid fa-location-dot text-rose-400 mr-1.5 text-xs"></i> ${mainAddress}
+            </div>
+            ${storeCount > 1 ? `<div class="text-[11px] text-purple-400 font-mono mt-0.5">+${storeCount - 1} điểm bán khác</div>` : ''}
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-xs text-slate-300">Cam kết: <strong class="text-white font-mono">${committedVol}</strong></div>
+            <div class="text-xs text-slate-400 font-mono mt-0.5">Công nợ: ${creditReq} (${graceDays})</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-xs text-slate-300 flex items-center">
+              <i class="fa-solid fa-wrench mr-1.5 text-slate-500 text-xs"></i> ${techCount}
+            </div>
+            <div class="text-[11px] text-slate-400 font-mono mt-0.5">
+              SLA: ${cand.warranty_service_capacity ? cand.warranty_service_capacity.average_sla_hours + 'h' : '--'}
+            </div>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <div class="inline-block text-base font-extrabold font-mono px-3 py-1 rounded-xl ${item.total_score >= 75 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : item.total_score >= 50 ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'}">
+              ${item.total_score}
+            </div>
+            <div class="text-[10px] text-slate-500 font-mono uppercase mt-0.5">/100</div>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="inline-flex items-center text-xs font-semibold font-mono px-3 py-1 rounded-full border ${badgePill}">
+              ${badgeIcon} ${item.status}
+            </span>
+            ${item.flags.length > 0 ? `<div class="text-[11px] text-rose-400 font-mono font-medium mt-1"><i class="fa-solid fa-flag mr-1"></i> ${item.flags.length} cờ rủi ro</div>` : ''}
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button onclick="viewDetails(${index})" class="px-3.5 py-1.5 glass-pill hover:bg-purple-600/30 text-purple-300 hover:text-white font-medium rounded-full text-xs transition duration-200 border border-purple-500/30">
+              Chi tiết &rarr;
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ----------------------------------------------------
+    // VIEW APPLICATION DETAILS & GEMINI ADVISORY
+    // ----------------------------------------------------
+    function viewDetails(index) {
+      currentDetailIndex = index;
+      const item = evaluations[index];
+      const cand = candidates.find(c => c.application_id === item.application_id) || {};
+      const modal = document.getElementById('detail-modal');
+
+      document.getElementById('modal-title').textContent = `${item.company_name} (${item.application_id})`;
+      const badge = document.getElementById('modal-badge');
+      if (item.decision === 'APPROVED') {
+        badge.className = 'px-3 py-1 text-xs rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        badge.textContent = 'TIẾN HÀNH';
+      } else if (item.decision === 'CONDITIONAL') {
+        badge.className = 'px-3 py-1 text-xs rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        badge.textContent = 'CHỜ XÁC MINH';
+      } else {
+        badge.className = 'px-3 py-1 text-xs rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+        badge.textContent = 'TỪ CHỐI';
+      }
+
+      const content = document.getElementById('modal-content');
+      content.innerHTML = `
+        <!-- Risk Flags -->
+        ${item.flags.length > 0 ? `
+          <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25">
+            <h4 class="font-bold text-rose-300 font-mono flex items-center mb-2 text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-triangle-exclamation mr-2 text-rose-400"></i> Cảnh Báo Rủi Ro Hệ Thống:
+            </h4>
+            <ul class="list-disc list-inside space-y-1 text-xs text-rose-200/90 leading-relaxed font-sans">
+              ${item.flags.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+          </div>
+        ` : `
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs flex items-center font-sans">
+            <i class="fa-solid fa-circle-check mr-2 text-emerald-400 text-base"></i> Không phát hiện cảnh báo rủi ro nghiêm trọng. Hồ sơ pháp nhân độc lập và hợp lệ.
+          </div>
+        `}
+
+        <!-- Mandatory Verification Conditions -->
+        <div class="p-4.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/25">
+          <h4 class="font-bold text-indigo-300 font-mono flex items-center mb-2.5 text-xs uppercase tracking-wide">
+            <i class="fa-solid fa-clipboard-check mr-2 text-indigo-400"></i> Điều Kiện Bắt Buộc Xác Minh Trước Khi Ký Hợp Đồng:
+          </h4>
+          ${item.verification_conditions.length > 0 ? `
+            <ol class="list-decimal list-inside space-y-2 text-xs text-slate-200 font-medium leading-relaxed">
+              ${item.verification_conditions.map(c => `<li>${c}</li>`).join('')}
+            </ol>
+          ` : `<p class="text-xs text-slate-400 italic">Không có điều kiện bổ sung nào.</p>`}
+        </div>
+
+        <!-- Gemini Strategic AI Advisory (Kin / Nously Style) -->
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-purple-900/30 via-indigo-900/20 to-black/40 border border-purple-500/30 shadow-glow-purple">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-400/50 shadow-md shadow-purple-600/30 shrink-0 bg-purple-950">
+                <img src="/assets/ai_robot.jpg" alt="AI Buddy" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm tracking-tight font-sans">
+                  Tham Mưu Chiến Lược & Kịch Bản Đàm Phán (Gemini LLM)
+                </h4>
+                <div class="text-[11px] text-purple-300 font-mono">Đại Thành Personal AI Buddy &bull; Sẵn sàng trợ giúp</div>
+              </div>
+            </div>
+            <button onclick="generateGeminiAdvisory()" id="btn-gemini-advise" class="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-full shadow-lg shadow-purple-600/30 flex items-center space-x-1.5 transition self-start sm:self-auto">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-[11px]"></i>
+              <span>Kích hoạt Gemini Tham Mưu</span>
+            </button>
+          </div>
+          <div id="gemini-advisory-content" class="text-xs text-slate-300 leading-relaxed">
+            <p class="text-slate-400 italic bg-black/30 p-3 rounded-xl border border-white/5">
+              Nhấn <strong>"Kích hoạt Gemini Tham Mưu"</strong> để mô hình Gemini 3.8 Flash phân tích sâu động cơ cam kết, rủi ro ngầm và lập kịch bản đàm phán 3 bước cho Trưởng phòng PTKD.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4 Agents Audit Breakdown Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Agent 1 & 2: Entity & Territory -->
+          <div class="bg-black/40 p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-mono text-xs uppercase text-purple-300 font-bold">1. Thực Thể & Địa Bàn</span>
+              <span class="text-xs font-mono font-bold text-white">${item.agent_findings.territory_check.score}/100</span>
+            </div>
+            <p class="text-xs text-slate-400"><strong>Deduplication:</strong> ${item.agent_findings.entity_screening.details}</p>
+            <p class="text-xs text-slate-400"><strong>Bảo hộ:</strong> ${item.agent_findings.territory_check.summary}</p>
+            ${item.agent_findings.territory_check.conflicting_stores && item.agent_findings.territory_check.conflicting_stores.length > 0 ? `
+              <div class="p-2.5 bg-rose-500/10 rounded-xl text-[11px] text-rose-300 border border-rose-500/20 font-mono">
+                ${item.agent_findings.territory_check.conflicting_stores.join('<br>')}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Agent 3: Credit Risk -->
+          <div class="bg-black/40 p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-mono text-xs uppercase text-indigo-300 font-bold">2. Tài Chính & Công Nợ</span>
+              <span class="text-xs font-mono font-bold text-white">${item.agent_findings.credit_check.score}/100</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              <strong>Yêu cầu:</strong> ${(item.agent_findings.credit_check.credit_requested/1e6).toLocaleString('vi-VN')} tr - Gối đầu ${item.agent_findings.credit_check.grace_days_requested} ngày
+            </p>
+            <p class="text-xs text-slate-400">
+              <strong>Thẩm định:</strong> ${item.agent_findings.credit_check.details}
+            </p>
+          </div>
+
+          <!-- Agent 4: Service & Warranty -->
+          <div class="bg-black/40 p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-mono text-xs uppercase text-cyan-300 font-bold">3. Năng Lực Bảo Hành</span>
+              <span class="text-xs font-mono font-bold text-white">${item.agent_findings.service_warranty_check.score}/100</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              <strong>Kỹ thuật viên:</strong> ${item.agent_findings.service_warranty_check.technicians} thợ &bull; SLA: ${item.agent_findings.service_warranty_check.sla_hours}h
+            </p>
+            <p class="text-xs text-slate-400">
+              <strong>Chi tiết:</strong> ${item.agent_findings.service_warranty_check.details}
+            </p>
+          </div>
+
+          <!-- Agent 5: Purchase Feasibility -->
+          <div class="bg-black/40 p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-mono text-xs uppercase text-amber-300 font-bold">4. Kế Hoạch Doanh Số</span>
+              <span class="text-xs font-mono font-bold text-white">${item.agent_findings.purchase_feasibility.score}/100</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              <strong>Cam kết:</strong> ${(item.agent_findings.purchase_feasibility.committed_monthly/1e6).toLocaleString('vi-VN')} tr/tháng
+            </p>
+            <p class="text-xs text-slate-400">
+              <strong>Đánh giá:</strong> ${item.agent_findings.purchase_feasibility.summary}
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Raw Text Summary -->
+        <div class="pt-2 border-t border-white/10">
+          <p class="text-[11px] font-mono uppercase text-slate-500">Tóm tắt văn bản hồ sơ gốc:</p>
+          <p class="text-xs text-slate-400 italic bg-black/40 p-3 rounded-xl border border-white/5 mt-1 font-sans leading-relaxed">
+            ${cand.raw_text_summary || 'N/A'}
+          </p>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    // ----------------------------------------------------
+    // GEMINI ADVISORY GENERATOR
+    // ----------------------------------------------------
+    async function generateGeminiAdvisory() {
+      const btn = document.getElementById('btn-gemini-advise');
+      const container = document.getElementById('gemini-advisory-content');
+      const item = evaluations[currentDetailIndex];
+      const cand = candidates.find(c => c.application_id === item.application_id) || {};
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Gemini đang phân tích...';
+      container.innerHTML = `
+        <div class="p-3.5 bg-black/40 rounded-xl border border-purple-500/30 text-purple-300 flex items-center space-x-2.5">
+          <i class="fa-solid fa-brain text-purple-400 animate-pulse text-base"></i>
+          <span>Gemini 3.8 Flash đang tổng hợp rủi ro chéo và xây dựng kịch bản đàm phán...</span>
+        </div>
+      `;
+
+      const prompt = `
+Bạn là Cố vấn Cấp cao cho Trưởng phòng Phát triển Kinh doanh của Công ty Thiết bị Gia dụng Đại Thành.
+Hãy thẩm định và đưa ra bản tham mưu chiến lược sắc bén cho hồ sơ ứng viên đối tác sau:
+
+THÔNG TIN ĐỐI TÁC:
+- Tên công ty: ${item.company_name}
+- Khu vực: ${item.region}
+- Điểm đánh giá AI: ${item.total_score}/100 - Đề xuất: ${item.status}
+- Cam kết nhập hàng: ${(cand.purchase_plan?.committed_monthly_volume_vnd || 0)/1e6} triệu/tháng
+- Đề xuất công nợ: ${(cand.commercial_requests?.credit_limit_requested_vnd || 0)/1e6} triệu, gối đầu ${cand.commercial_requests?.grace_period_days_requested || 0} ngày
+- Năng lực bảo hành: ${cand.warranty_service_capacity?.technicians_count || 0} kỹ thuật viên, SLA ${cand.warranty_service_capacity?.average_sla_hours || 0}h
+- Cờ cảnh báo: ${item.flags.join('; ')}
+- Điều kiện cần xác minh: ${item.verification_conditions.join('; ')}
+
+HÃY ĐƯA RA BÁO CÁO THAM MƯU THỰC CHIẾN GỒM 3 MỤC (ĐỊNH DẠNG HTML VỚI CÁC THẺ <b>, <ul>, <li>, <p>):
+1. BẢN CHẤT & RỦI RO NGẦM: Động cơ đằng sau cam kết doanh số và yêu cầu công nợ? Đại Thành chịu rủi ro gì?
+2. KỊCH BẢN ĐÀM PHÁN 3 BƯỚC: Hướng dẫn nhân viên kinh doanh đàm phán cụ thể để đưa công nợ và địa bàn về mức an toàn.
+3. PHƯƠNG ÁN CHỐT AN TOÀN: Điều kiện bắt buộc tối thiểu để ký kết hợp tác thử việc.
+`;
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiApiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        let reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) {
+          reply = reply.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
+          reply = reply.replace(/\n\n/g, '<br><br>');
+          container.innerHTML = `
+            <div class="p-4 bg-black/40 rounded-xl border border-white/10 text-slate-300 space-y-2 text-xs leading-relaxed">
+              ${reply}
+            </div>
+          `;
+        } else {
+          throw new Error(data.error?.message || "Không nhận được phản hồi");
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `
+          <div class="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl text-xs">
+            <strong>Tham mưu nội bộ:</strong> Đối tác có tỷ lệ cam kết doanh số chưa cân đối với năng lực bảo hành hoặc yêu cầu công nợ vượt trần thử việc. Khuyến nghị đàm phán thu hẹp công nợ xuống tối đa 100 triệu, 7 ngày gối đầu và yêu cầu thẩm định trạm kỹ thuật thực tế trước khi ký kết. (Chi tiết: ${err.message})
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate mr-1.5"></i> Phân tích lại';
+      }
+    }
+
+    // ----------------------------------------------------
+    // PRINTABLE REPORT GENERATOR
+    // ----------------------------------------------------
+    function printExecutiveReport() {
+      const item = evaluations[currentDetailIndex];
+      const cand = candidates.find(c => c.application_id === item.application_id) || {};
+      const printArea = document.getElementById('printable-report');
+
+      printArea.innerHTML = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.5; color: #111;">
+          <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">CÔNG TY CỔ PHẦN THIẾT BỊ GIA DỤNG ĐẠI THÀNH</h2>
+            <h3 style="margin: 5px 0 0 0; font-size: 15px;">PHÒNG PHÁT TRIỂN KINH DOANH</h3>
+            <h1 style="margin: 15px 0 5px 0; font-size: 20px; text-transform: uppercase; color: #4338ca;">TỜ TRÌNH THẨM ĐỊNH ĐỐI TÁC PHÂN PHỐI</h1>
+            <p style="margin: 0; font-size: 12px; font-style: italic;">(Tổng hợp tự động bởi Hệ thống AI Agent & Ban Thẩm định Liên phòng ban)</p>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px;">
+            <tr>
+              <td style="width: 25%; font-weight: bold; padding: 6px; border: 1px solid #ccc;">Tên Đối Tác:</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${item.company_name}</td>
+              <td style="width: 20%; font-weight: bold; padding: 6px; border: 1px solid #ccc;">Mã Hồ Sơ:</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${item.application_id}</td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold; padding: 6px; border: 1px solid #ccc;">Mã Số Thuế:</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${item.tax_id}</td>
+              <td style="font-weight: bold; padding: 6px; border: 1px solid #ccc;">Người Đại Diện:</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${item.legal_rep}</td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold; padding: 6px; border: 1px solid #ccc;">Địa Bàn Đăng Ký:</td>
+              <td colspan="3" style="padding: 6px; border: 1px solid #ccc;">${cand.store_locations && cand.store_locations[0] ? cand.store_locations[0].address : ''}</td>
+            </tr>
+          </table>
+
+          <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+            <p style="margin: 0; font-size: 14px;"><strong>KẾT QUẢ ĐÁNH GIÁ TỔNG HỢP:</strong> <span style="font-size: 18px; color: #4338ca; font-weight: bold;">${item.total_score}/100 Điểm</span> &bull; <strong>ĐỀ XUẤT:</strong> <span style="font-weight: bold; color: ${item.decision === 'APPROVED' ? '#059669' : item.decision === 'CONDITIONAL' ? '#d97706' : '#dc2626'}">${item.status}</span></p>
+          </div>
+
+          <h4 style="font-size: 14px; text-transform: uppercase; margin-bottom: 6px;">1. ĐIỀU KIỆN TIÊN QUYẾT BẮT BUỘC PHẢI XÁC MINH TRƯỚC KHI KÝ HỢP ĐỒNG:</h4>
+          <ol style="margin-top: 0; padding-left: 20px; font-size: 13px;">
+            ${item.verification_conditions.map(c => `<li style="margin-bottom: 4px;"><strong>${c}</strong></li>`).join('')}
+          </ol>
+
+          <h4 style="font-size: 14px; text-transform: uppercase; margin-bottom: 6px;">2. Ý KIẾN THẨM ĐỊNH LIÊN PHÒNG BAN:</h4>
+          <ul style="margin-top: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">
+            <li><strong>Phòng Kinh Doanh (Địa bàn):</strong> ${item.agent_findings.territory_check.summary} (Điểm: ${item.agent_findings.territory_check.score}/100)</li>
+            <li><strong>Phòng Tài Chính (Công nợ):</strong> ${item.agent_findings.credit_check.details} (Điểm: ${item.agent_findings.credit_check.score}/100)</li>
+            <li><strong>Phòng Vận Hành (Bảo hành):</strong> ${item.agent_findings.service_warranty_check.details} (Điểm: ${item.agent_findings.service_warranty_check.score}/100)</li>
+          </ul>
+
+          <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 13px;">
+            <div style="width: 30%;">
+              <p style="margin: 0; font-weight: bold;">PHÒNG TÀI CHÍNH</p>
+              <p style="font-size: 11px; font-style: italic;">(Ký & ghi rõ họ tên)</p>
+              <div style="height: 60px;"></div>
+            </div>
+            <div style="width: 30%;">
+              <p style="margin: 0; font-weight: bold;">PHÒNG VẬN HÀNH</p>
+              <p style="font-size: 11px; font-style: italic;">(Ký & ghi rõ họ tên)</p>
+              <div style="height: 60px;"></div>
+            </div>
+            <div style="width: 30%;">
+              <p style="margin: 0; font-weight: bold;">TRƯỞNG PHÒNG PTKD</p>
+              <p style="font-size: 11px; font-style: italic;">(Phê duyệt)</p>
+              <div style="height: 60px;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    // ----------------------------------------------------
+    // INPUT MODE SWITCHER & RAW TEXT EXTRACTOR
+    // ----------------------------------------------------
+    function switchInputMode(mode) {
+      if (mode === 'text') {
+        document.getElementById('section-ai-text').classList.remove('hidden');
+        document.getElementById('tab-text').className = 'pb-2.5 border-b-2 border-purple-500 text-purple-400 font-bold flex items-center space-x-1.5';
+        document.getElementById('tab-form').className = 'pb-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5';
+      } else {
+        document.getElementById('section-ai-text').classList.add('hidden');
+        document.getElementById('tab-form').className = 'pb-2.5 border-b-2 border-purple-500 text-purple-400 font-bold flex items-center space-x-1.5';
+        document.getElementById('tab-text').className = 'pb-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5';
+      }
+    }
+
+    function loadSampleText() {
+      document.getElementById('raw-applicant-text').value = 
+`Kính gửi Ban Giám Đốc Công ty Đại Thành,
+Tôi là Nguyễn Văn Hòa, Giám đốc Công ty TNHH Bếp Hoàng Gia (MST: 0109988776).
+Chúng tôi có showroom diện tích 150m2 tại số 280 Xã Đàn, Phường Phương Liên, Quận Đống Đa, Hà Nội.
+Chúng tôi muốn đăng ký làm đại lý phân phối chính thức các dòng bếp từ và máy hút mùi của Đại Thành.
+Kế hoạch kinh doanh: Cam kết nhập hàng đều đặn 450,000,000 VNĐ mỗi tháng.
+Về năng lực kỹ thuật: Đã có trạm bảo hành với 3 thợ kỹ thuật có chứng chỉ điện lạnh gia dụng, cam kết SLA sửa chữa trong 24h.
+Đề xuất hỗ trợ thương mại: Xin hạn mức công nợ thử việc 150,000,000 VNĐ, gối đầu 15 ngày sau khi thanh toán xong đơn hàng đầu tiên.`;
+    }
+
+    async function parseRawTextWithAI() {
+      const text = document.getElementById('raw-applicant-text').value;
+      if (!text) { alert('Vui lòng dán văn bản hồ sơ trước!'); return; }
+
+      const btn = document.getElementById('btn-parse-text');
+      const oldHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang trích xuất...';
+      }
+
+      if (geminiApiKey) {
+        try {
+          const prompt = `
+Bạn là Trợ lý AI trích xuất hồ sơ đại lý của Công ty Thiết bị Gia dụng Đại Thành.
+Hãy đọc văn bản sau và trích xuất đúng định dạng JSON (chỉ trả về chuỗi JSON thuần túy, không có giải thích, không dùng markdown \`\`\`):
+{
+  "company_name": "Tên công ty",
+  "tax_id": "Mã số thuế",
+  "legal_representative": "Họ tên người đại diện",
+  "address": "Địa chỉ điểm bán",
+  "committed_monthly_volume_vnd": 0,
+  "credit_limit_requested_vnd": 0,
+  "grace_period_days_requested": 0,
+  "technicians_count": 0
+}
+
+VĂN BẢN:
+${text}
+`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiApiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const data = await res.json();
+          let rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawJson) {
+            rawJson = rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(rawJson);
+            if (parsed.company_name) document.getElementById('new-name').value = parsed.company_name;
+            if (parsed.tax_id) document.getElementById('new-tax').value = parsed.tax_id;
+            if (parsed.legal_representative) document.getElementById('new-rep').value = parsed.legal_representative;
+            if (parsed.address) document.getElementById('new-address').value = parsed.address;
+            if (parsed.committed_monthly_volume_vnd) document.getElementById('new-purchase').value = parsed.committed_monthly_volume_vnd;
+            if (parsed.credit_limit_requested_vnd) document.getElementById('new-credit').value = parsed.credit_limit_requested_vnd;
+            if (parsed.grace_period_days_requested) document.getElementById('new-grace').value = parsed.grace_period_days_requested;
+            if (parsed.technicians_count) document.getElementById('new-tech').value = parsed.technicians_count;
+
+            if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
+            alert('✨ Gemini AI 3.8 Flash đã trích xuất toàn bộ dữ liệu chính xác vào form!');
+            return;
+          }
+        } catch (e) {
+          console.warn('Gemini parser fallback to regex:', e);
+        }
+      }
+
+      // Regex Fallback
+      const nameMatch = text.match(/(?:Công ty|Doanh nghiệp|Hộ kinh doanh|Cty)[^\n,.]+/i);
+      const taxMatch = text.match(/(?:MST|mã số thuế|tax id)[:\s]*([0-9]{10,13})/i);
+      const repMatch = text.match(/(?:ông|bà|đại diện|giám đốc)[:\s]*([A-ZÀ-Ỹ][a-zà-ỹ]+(?:\s+[A-ZÀ-Ỹ][a-zà-ỹ]+){1,4})/i);
+      const addressMatch = text.match(/(?:số\s+[0-9]+[^\n,.]+(?:quận|huyện|tp|hà nội|hồ chí minh|đà nẵng)[^\n,.]*)/i) || text.match(/(?:tại|địa chỉ)[:\s]*([^\n,]+)/i);
+      const purchaseMatch = text.match(/([0-9.,]+)\s*(?:triệu|tỷ|vnđ|đ)\s*(?:\/tháng|mỗi tháng|hàng tháng)/i);
+      const creditMatch = text.match(/(?:công nợ|hạn mức)[:\s]*([0-9.,]+)\s*(?:triệu|tỷ|vnđ)/i);
+      const graceMatch = text.match(/([0-9]+)\s*ngày/i);
+      const techMatch = text.match(/([0-9]+)\s*(?:thợ|kỹ thuật viên|nhân viên kỹ thuật)/i);
+
+      if (nameMatch) document.getElementById('new-name').value = nameMatch[0].trim();
+      if (taxMatch) document.getElementById('new-tax').value = taxMatch[1].trim();
+      if (repMatch) document.getElementById('new-rep').value = repMatch[1].trim();
+      if (addressMatch) document.getElementById('new-address').value = addressMatch[0].trim();
+      if (purchaseMatch) {
+        let val = parseFloat(purchaseMatch[1].replace(/,/g, ''));
+        if (purchaseMatch[0].includes('tỷ')) val *= 1000000000;
+        else val *= 1000000;
+        document.getElementById('new-purchase').value = val;
+      }
+      if (creditMatch) {
+        let val = parseFloat(creditMatch[1].replace(/,/g, ''));
+        if (creditMatch[0].includes('tỷ')) val *= 1000000000;
+        else val *= 1000000;
+        document.getElementById('new-credit').value = val;
+      }
+      if (graceMatch) document.getElementById('new-grace').value = parseInt(graceMatch[1]);
+      if (techMatch) document.getElementById('new-tech').value = parseInt(techMatch[1]);
+
+      if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
+      alert('Đã hoàn tất trích xuất thông tin vào form!');
+    }
+
+    // ----------------------------------------------------
+    // WEIGHT TUNING HANDLERS
+    // ----------------------------------------------------
+    function toggleWeightModal() {
+      const modal = document.getElementById('weight-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function updateWeights() {
+      const wTerritory = parseInt(document.getElementById('w-territory').value);
+      const wCredit = parseInt(document.getElementById('w-credit').value);
+      const wService = parseInt(document.getElementById('w-service').value);
+      const wPurchase = parseInt(document.getElementById('w-purchase').value);
+      const wSupport = parseInt(document.getElementById('w-support').value);
+
+      document.getElementById('val-w-territory').textContent = wTerritory + '%';
+      document.getElementById('val-w-credit').textContent = wCredit + '%';
+      document.getElementById('val-w-service').textContent = wService + '%';
+      document.getElementById('val-w-purchase').textContent = wPurchase + '%';
+      document.getElementById('val-w-support').textContent = wSupport + '%';
+
+      evaluations.forEach(item => {
+        const sum = (
+          item.agent_findings.territory_check.score * (wTerritory / 100) +
+          item.agent_findings.credit_check.score * (wCredit / 100) +
+          item.agent_findings.service_warranty_check.score * (wService / 100) +
+          item.agent_findings.purchase_feasibility.score * (wPurchase / 100) +
+          80 * (wSupport / 100)
+        );
+        item.total_score = Math.round(sum * 10) / 10;
+      });
+
+      renderTable();
+    }
+
+    // ----------------------------------------------------
+    // POLICIES & PARTNERS MODAL
+    // ----------------------------------------------------
+    function viewPoliciesModal() {
+      const modal = document.getElementById('policies-modal');
+      const content = document.getElementById('policies-content');
+      content.innerHTML = `
+        <div class="space-y-3 font-sans">
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/10">
+            <h5 class="font-bold text-purple-300 font-mono text-xs uppercase mb-1">1. Chính sách Công nợ Đối tác Mới (Thử việc):</h5>
+            <p class="text-slate-300">&bull; Trần công nợ tối đa: <strong class="text-white">100 triệu VNĐ</strong>.</p>
+            <p class="text-slate-300">&bull; Thời gian ân hạn: <strong class="text-white">Tối đa 7 ngày gối đầu</strong> (100% thanh toán trước đơn hàng đầu tiên).</p>
+          </div>
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/10">
+            <h5 class="font-bold text-indigo-300 font-mono text-xs uppercase mb-1">2. Chính sách Bảo hộ Địa bàn:</h5>
+            <p class="text-slate-300">&bull; Bán kính bảo hộ tối thiểu giữa 2 điểm bán: <strong class="text-white">2.0 km (nội thành)</strong>, 3.0 km (ngoại thành).</p>
+            <p class="text-slate-300">&bull; Cấm tuyệt đối mở showroom mới trong bán kính bảo hộ của đại lý độc quyền hiện tại.</p>
+          </div>
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/10">
+            <h5 class="font-bold text-cyan-300 font-mono text-xs uppercase mb-1">3. Tiêu chuẩn Dịch vụ Bảo hành Thiết bị Gia dụng:</h5>
+            <p class="text-slate-300">&bull; Tối thiểu 2 kỹ thuật viên có chứng chỉ kỹ thuật điện máy gia dụng.</p>
+            <p class="text-slate-300">&bull; SLA xử lý sự cố cho khách lẻ tối đa: <strong class="text-white">48 giờ</strong>.</p>
+            <p class="text-slate-300">&bull; Có kho lưu trữ linh kiện thay thế chuẩn diện tích tối thiểu 15m².</p>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function closePoliciesModal() {
+      document.getElementById('policies-modal').classList.add('hidden');
+    }
+
+    function viewExistingPartnersModal() {
+      const modal = document.getElementById('partners-modal');
+      const content = document.getElementById('partners-content');
+      content.innerHTML = `
+        <div class="space-y-3 font-sans">
+          ${existingPartners.map(p => `
+            <div class="p-4 rounded-2xl border ${p.status === 'blacklisted_bad_debt' ? 'bg-rose-500/10 border-rose-500/25' : 'bg-black/40 border-white/10'}">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h5 class="font-bold text-sm ${p.status === 'blacklisted_bad_debt' ? 'text-rose-300' : 'text-white'}">${p.name}</h5>
+                  <div class="text-xs text-slate-400 font-mono mt-0.5">MST: ${p.tax_id} &bull; Đại diện: ${p.legal_representative || 'N/A'} &bull; SĐT: ${p.phone}</div>
+                </div>
+                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full border ${p.status === 'blacklisted_bad_debt' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'}">
+                  ${p.status === 'blacklisted_bad_debt' ? 'BLACKLIST NỢ XẤU' : 'ĐANG HOẠT ĐỘNG'}
+                </span>
+              </div>
+              ${p.notes ? `<p class="text-xs text-rose-400 mt-1.5 italic">${p.notes}</p>` : ''}
+              ${p.stores ? `
+                <div class="mt-2 text-xs text-slate-400 space-y-1">
+                  <strong class="text-slate-300">Các điểm bán bảo hộ:</strong>
+                  ${p.stores.map(s => `<div>&bull; ${s.name} - ${s.address} (Bảo hộ: ${s.protected_radius_km}km)</div>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function closePartnersModal() {
+      document.getElementById('partners-modal').classList.add('hidden');
+    }
+
+    function openNewModal() {
+      document.getElementById('new-modal').classList.remove('hidden');
+    }
+
+    function closeNewModal() {
+      document.getElementById('new-modal').classList.add('hidden');
+    }
+
+    // ----------------------------------------------------
+    // CLIENT-SIDE FALLBACK EVALUATION (Zero-Fail Safety Net)
+    // ----------------------------------------------------
+    function evaluateCandidateClient(candidate) {
+      const flags = [];
+      const conditions = [];
+
+      let isDuplicate = false;
+      let isBlacklisted = false;
+      let matchedPartner = null;
+      let entityDetails = "Hồ sơ pháp nhân độc lập, không trùng lặp.";
+
+      for (const p of existingPartners) {
+        if (p.tax_id === candidate.tax_id || p.phone === candidate.contact_phone || (p.legal_representative && candidate.legal_representative && p.legal_representative.toLowerCase() === candidate.legal_representative.toLowerCase())) {
+          matchedPartner = p.name;
+          if (p.status === 'blacklisted_bad_debt') {
+            isBlacklisted = true;
+            entityDetails = `NGHIÊM TRỌNG: Trùng khớp thông tin (MST/Đại diện) với đối tác Blacklist [${p.name}] - Lý do: ${p.notes || ''}`;
+            flags.push("BLACKLIST_MATCH: Đối tác từng phát sinh nợ xấu hoặc vi phạm hệ thống.");
+          } else {
+            isDuplicate = true;
+            entityDetails = `CẢNH BÁO: Trùng lặp với đối tác đang hoạt động [${p.name}] trong hệ thống.`;
+            flags.push("EXISTING_PARTNER: Đại lý này đã thuộc mạng lưới của Đại Thành.");
+          }
+          break;
+        }
+      }
+
+      let hasConflict = false;
+      const conflictingStores = [];
+      let territoryScore = 90;
+
+      function distKm(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return 9999;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+        return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 10) / 10;
+      }
+
+      if (candidate.store_locations) {
+        for (const appStore of candidate.store_locations) {
+          for (const p of existingPartners) {
+            if (p.stores) {
+              for (const exStore of p.stores) {
+                const d = distKm(appStore.lat, appStore.lng, exStore.lat, exStore.lng);
+                const protRad = exStore.protected_radius_km || 2.0;
+                if (d < protRad) {
+                  hasConflict = true;
+                  conflictingStores.push(`Điểm [${appStore.address}] cách showroom [${exStore.name}] của [${p.name}] chỉ ${d}km (Bảo hộ: ${protRad}km).`);
+                  flags.push("TERRITORY_CONFLICT: Xung đột địa bàn bảo hộ với đối tác hiện hữu.");
+                  conditions.push(`Cần thương lượng đổi vị trí điểm bán hoặc ký văn bản đồng thuận không phân vùng với đối tác ${p.name}.`);
+                }
+              }
+            }
+          }
+        }
+      }
+      if (hasConflict) territoryScore = 30;
+
+      const creditReq = candidate.commercial_requests?.credit_limit_requested_vnd || 0;
+      const graceReq = candidate.commercial_requests?.grace_period_days_requested || 0;
+      let creditScore = 85;
+      let creditDetails = "Chính sách công nợ đề xuất phù hợp quy chuẩn.";
+
+      if (creditReq > 100000000 || graceReq > 7) {
+        creditScore = 40;
+        creditDetails = `Yêu cầu công nợ (${Math.round(creditReq/1e6)} triệu, ${graceReq} ngày) vượt khung thử việc của đối tác mới (Khung chuẩn: Tối đa 100 triệu, 7 ngày gối đầu).`;
+        flags.push("CREDIT_OVER_LIMIT: Đòi hỏi chính sách tài chính vượt khung quy định.");
+        conditions.push("Đàm phán lại điều khoản thanh toán: Yêu cầu 100% thanh toán trước đơn đầu, đơn sau gối đầu tối đa 7 ngày hoặc cung cấp bảo lãnh ngân hàng.");
+      }
+
+      const tech = candidate.warranty_service_capacity?.technicians_count || 0;
+      const sla = candidate.warranty_service_capacity?.average_sla_hours || 0;
+      let serviceScore = 90;
+      let serviceDetails = "Đội ngũ kỹ thuật và trạm dịch vụ đạt chuẩn bảo hành gia dụng.";
+
+      if (tech < 2 || sla > 48) {
+        serviceScore = 35;
+        serviceDetails = `Chưa đáp ứng tiêu chuẩn dịch vụ sau bán: Có ${tech}/2 thợ, SLA cam kết ${sla}h (Quy chuẩn tối đa 48h).`;
+        flags.push("SERVICE_CAPACITY_LOW: Năng lực bảo hành sửa chữa gia dụng chưa đạt chuẩn.");
+        conditions.push("Khảo sát thực địa: Kiểm tra tay nghề kỹ thuật viên, yêu cầu cử ít nhất 2 nhân sự tham gia khóa đào tạo chứng chỉ kỹ thuật Đại Thành.");
+      }
+
+      const purchaseVol = candidate.purchase_plan?.committed_monthly_volume_vnd || 0;
+      let purchaseScore = 80;
+      if (purchaseVol > 1000000000 && tech < 2) {
+        purchaseScore = 50;
+        flags.push("UNBALANCED_COMMITMENT: Cam kết nhập hàng lớn nhưng năng lực phục vụ khách hàng không tương xứng.");
+        conditions.push("Yêu cầu đại lý cam kết tiến độ mở rộng trung tâm kỹ thuật song song với tiến độ doanh số.");
+      }
+
+      const totalScore = Math.round((territoryScore * 0.25 + creditScore * 0.25 + serviceScore * 0.20 + purchaseScore * 0.20 + 80 * 0.10) * 10) / 10;
+
+      let decision = "CONDITIONAL";
+      let status = "CHỜ XÁC MINH & ĐÀM PHÁN LẠI";
+
+      if (isBlacklisted) {
+        decision = "REJECTED";
+        status = "TỪ CHỐI NGAY (Blacklist/Gian lận)";
+      } else if (hasConflict && creditScore <= 40 && serviceScore <= 35) {
+        decision = "REJECTED";
+        status = "TỪ CHỐI (Vi phạm nhiều điều kiện cốt lõi)";
+      } else if (flags.length === 0 && conditions.length === 0) {
+        decision = "APPROVED";
+        status = "ƯU TIÊN TIẾN HÀNH KÝ HỢP ĐỒNG";
+        conditions.push("Tiến hành thị sát thẩm định thực tế điểm bán lần cuối trước khi ký.");
+      }
+
+      return {
+        application_id: candidate.application_id,
+        company_name: candidate.company_name,
+        tax_id: candidate.tax_id,
+        legal_rep: candidate.legal_representative,
+        region: candidate.region_applied,
+        status: status,
+        total_score: totalScore,
+        decision: decision,
+        agent_findings: {
+          entity_screening: { is_duplicate: isDuplicate, is_blacklisted: isBlacklisted, matched_partner: matchedPartner, details: entityDetails },
+          territory_check: { has_conflict: hasConflict, conflicting_stores: conflictingStores, score: territoryScore, summary: hasConflict ? "Phát hiện xung đột bán kính bảo hộ với đại lý hiện có." : "Điểm bán đáp ứng khoảng cách an toàn." },
+          credit_check: { credit_requested: creditReq, grace_days_requested: graceReq, exceeds_policy: creditScore <= 40, score: creditScore, details: creditDetails },
+          service_warranty_check: { technicians: tech, sla_hours: sla, meets_criteria: serviceScore >= 80, score: serviceScore, details: serviceDetails },
+          purchase_feasibility: { committed_monthly: purchaseVol, score: purchaseScore, summary: "Cam kết sản lượng khả thi so với quy mô điểm bán." }
+        },
+        verification_conditions: conditions,
+        flags: flags
+      };
+    }
+
+    // ----------------------------------------------------
+    // SUBMIT CANDIDATE FORM
+    // ----------------------------------------------------
+    async function submitNewCandidate(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const oldHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang gửi & AI Thẩm định...';
+      }
+
+      const newCand = {
+        application_id: 'APP-' + Math.floor(1000 + Math.random() * 9000),
+        company_name: document.getElementById('new-name').value.trim(),
+        tax_id: document.getElementById('new-tax').value.trim(),
+        legal_representative: document.getElementById('new-rep').value.trim(),
+        contact_phone: "0900000000",
+        region_applied: "Khu vực 1 (Miền Bắc)",
+        store_locations: [
+          {
+            address: document.getElementById('new-address').value.trim(),
+            floor_area_sqm: 100,
+            is_rental: true,
+            lat: 21.0180,
+            lng: 105.8300
+          }
+        ],
+        warranty_service_capacity: {
+          has_service_center: true,
+          technicians_count: parseInt(document.getElementById('new-tech').value) || 0,
+          parts_storage_sqm: 20,
+          certifications: ["Kỹ thuật điện gia dụng"],
+          average_sla_hours: 36
+        },
+        purchase_plan: {
+          committed_monthly_volume_vnd: parseFloat(document.getElementById('new-purchase').value) || 0,
+          growth_rate_target_quarterly: "10%"
+        },
+        commercial_requests: {
+          credit_limit_requested_vnd: parseFloat(document.getElementById('new-credit').value) || 0,
+          grace_period_days_requested: parseInt(document.getElementById('new-grace').value) || 0
+        },
+        raw_text_summary: document.getElementById('raw-applicant-text')?.value || "Hồ sơ mới được nhập qua giao diện điều hành."
+      };
+
+      try {
+        let evalRes = null;
+        try {
+          const res = await fetch('/api/evaluate-single', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newCand)
+          });
+          if (res.ok) {
+            evalRes = await res.json();
+          }
+        } catch (netErr) {
+          console.warn('Network call failed, using client-side AI engine:', netErr);
+        }
+
+        if (!evalRes) {
+          evalRes = evaluateCandidateClient(newCand);
+        }
+
+        candidates.unshift(newCand);
+        evaluations.unshift(evalRes);
+
+        closeNewModal();
+        renderTable();
+        renderStats();
+        renderMapMarkers();
+
+        viewDetails(0);
+      } catch (err) {
+        alert('Lỗi xử lý hồ sơ: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = oldHtml;
+        }
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

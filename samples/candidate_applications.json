@@ -1,0 +1,241 @@
+﻿[
+    {
+        "application_id":  "APP-1288",
+        "company_name":  "hasaki",
+        "tax_id":  "35266644",
+        "legal_representative":  "Nguyễn Văn Anh",
+        "contact_phone":  "0900000000",
+        "region_applied":  "Khu vực 1 (Miền Bắc)",
+        "store_locations":  [
+                                {
+                                    "address":  "Hà nội",
+                                    "floor_area_sqm":  100,
+                                    "is_rental":  true,
+                                    "lat":  21.018,
+                                    "lng":  105.83
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "has_service_center":  true,
+                                          "technicians_count":  2,
+                                          "parts_storage_sqm":  20,
+                                          "certifications":  [
+                                                                 "Kỹ thuật điện gia dụng"
+                                                             ],
+                                          "average_sla_hours":  36
+                                      },
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  400000000,
+                              "growth_rate_target_quarterly":  "10%"
+                          },
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  10000000,
+                                    "grace_period_days_requested":  2
+                                },
+        "raw_text_summary":  "Hồ sơ mới được nhập qua giao diện điều hành."
+    },
+    {
+        "application_id":  "APP-3154",
+        "company_name":  "hasaki",
+        "tax_id":  "35266644",
+        "legal_representative":  "Nguyễn Văn Anh",
+        "contact_phone":  "0900000000",
+        "region_applied":  "Khu vực 1 (Miền Bắc)",
+        "store_locations":  [
+                                {
+                                    "address":  "Hà nội",
+                                    "floor_area_sqm":  100,
+                                    "is_rental":  true,
+                                    "lat":  21.018,
+                                    "lng":  105.83
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "has_service_center":  true,
+                                          "technicians_count":  2,
+                                          "parts_storage_sqm":  20,
+                                          "certifications":  [
+                                                                 "Kỹ thuật điện gia dụng"
+                                                             ],
+                                          "average_sla_hours":  36
+                                      },
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  400000000,
+                              "growth_rate_target_quarterly":  "10%"
+                          },
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  10000000,
+                                    "grace_period_days_requested":  2
+                                },
+        "raw_text_summary":  "Hồ sơ mới được nhập qua giao diện điều hành."
+    },
+    {
+        "legal_representative":  "Phạm Minh Tuấn",
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  150000000,
+                                    "grace_period_days_requested":  15
+                                },
+        "application_id":  "APP-TEST-99",
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  350000000
+                          },
+        "tax_id":  "0109988123",
+        "contact_phone":  "0987112233",
+        "region_applied":  "Khu vực 1 (Miền Bắc)",
+        "store_locations":  [
+                                {
+                                    "lng":  105.8189,
+                                    "lat":  21.0045,
+                                    "address":  "88 Đường Láng, Hà Nội"
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "average_sla_hours":  24,
+                                          "has_service_center":  true,
+                                          "technicians_count":  3
+                                      },
+        "company_name":  "Công ty TNHH Bếp Xanh Việt"
+    },
+    {
+        "application_id":  "APP-2026-001",
+        "received_date":  "2026-11-05",
+        "company_name":  "Công ty TNHH Bếp Xanh Việt",
+        "tax_id":  "0109988123",
+        "legal_representative":  "Phạm Minh Tuấn",
+        "contact_phone":  "0987112233",
+        "region_applied":  "Khu vực 1 (Miền Bắc)",
+        "store_locations":  [
+                                {
+                                    "address":  "88 Đường Láng, Ngã Tư Sở, Quận Đống Đa, Hà Nội",
+                                    "floor_area_sqm":  120,
+                                    "is_rental":  true,
+                                    "lease_duration_years":  3,
+                                    "lat":  21.0045,
+                                    "lng":  105.8189
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "has_service_center":  true,
+                                          "technicians_count":  3,
+                                          "parts_storage_sqm":  25,
+                                          "certifications":  [
+                                                                 "Chứng chỉ an toàn điện bậc 3/7",
+                                                                 "Đào tạo kỹ thuật bếp từ Bosch/Teka"
+                                                             ],
+                                          "average_sla_hours":  24
+                                      },
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  350000000,
+                              "target_products":  [
+                                                      "Bếp từ đôi",
+                                                      "Máy hút mùi kính cong",
+                                                      "Nồi chiên không dầu"
+                                                  ],
+                              "growth_rate_target_quarterly":  "15%"
+                          },
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  150000000,
+                                    "grace_period_days_requested":  15,
+                                    "signboard_support_vnd":  20000000,
+                                    "display_shelf_support":  "Yêu cầu 2 kệ demo sản phẩm âm tủ"
+                                },
+        "raw_text_summary":  "Đại lý mới muốn gia nhập hệ thống bán lẻ cao cấp tại quận Đống Đa. Mặt bằng đẹp, đã có 3 thợ kỹ thuật cứng có kinh nghiệm sửa thiết bị bếp gia dụng. Cam kết thanh toán đúng hạn, xin gối đầu 150 triệu sau đơn hàng đầu."
+    },
+    {
+        "application_id":  "APP-2026-002",
+        "received_date":  "2026-11-08",
+        "company_name":  "Công ty CP Thương mại Gia dụng Thịnh Vượng",
+        "tax_id":  "0107765432",
+        "legal_representative":  "Vũ Đình Trọng",
+        "contact_phone":  "0977665544",
+        "region_applied":  "Khu vực 1 (Miền Bắc)",
+        "store_locations":  [
+                                {
+                                    "address":  "135 Cầu Giấy, Phường Quan Hoa, Quận Cầu Giấy, Hà Nội",
+                                    "floor_area_sqm":  200,
+                                    "is_rental":  true,
+                                    "lease_duration_years":  5,
+                                    "lat":  21.0359,
+                                    "lng":  105.7949,
+                                    "notes":  "Cách showroom Phúc Thịnh Cầu Giấy chỉ 150m!"
+                                },
+                                {
+                                    "address":  "520 Nguyễn Văn Cừ, Quận Long Biên, Hà Nội",
+                                    "floor_area_sqm":  180,
+                                    "is_rental":  false,
+                                    "lease_duration_years":  10,
+                                    "lat":  21.0512,
+                                    "lng":  105.8761
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "has_service_center":  false,
+                                          "technicians_count":  1,
+                                          "parts_storage_sqm":  8,
+                                          "certifications":  [
+
+                                                             ],
+                                          "average_sla_hours":  72
+                                      },
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  1200000000,
+                              "target_products":  [
+                                                      "Bếp từ",
+                                                      "Máy hút mùi",
+                                                      "Lò nướng",
+                                                      "Máy lọc nước"
+                                                  ],
+                              "growth_rate_target_quarterly":  "30%"
+                          },
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  1000000000,
+                                    "grace_period_days_requested":  60,
+                                    "signboard_support_vnd":  80000000,
+                                    "display_shelf_support":  "Tài trợ toàn bộ 100% chi phí showroom mới"
+                                },
+        "raw_text_summary":  "Cam kết doanh số rất lớn (\u003e1.2 tỷ/tháng), tuy nhiên đòi hạn mức công nợ tới 1 tỷ, gối đầu 60 ngày ngay từ tháng đầu. Điểm bán tại Cầu Giấy nằm đối diện đại lý lớn Phúc Thịnh hiện tại của Đại Thành. Năng lực bảo hành chỉ có 1 thợ giao nhận, chưa có kho linh kiện."
+    },
+    {
+        "application_id":  "APP-2026-003",
+        "received_date":  "2026-11-09",
+        "company_name":  "Công ty TNHH Phát triển Gia dụng Toàn Thắng",
+        "tax_id":  "0309988776",
+        "legal_representative":  "Trần Văn Toàn",
+        "contact_phone":  "0933221100",
+        "region_applied":  "Khu vực 3 (Miền Nam)",
+        "store_locations":  [
+                                {
+                                    "address":  "18 Võ Văn Kiệt, Quận 1, TP. Hồ Chí Minh",
+                                    "floor_area_sqm":  90,
+                                    "is_rental":  true,
+                                    "lease_duration_years":  1,
+                                    "lat":  10.7681,
+                                    "lng":  106.6983
+                                }
+                            ],
+        "warranty_service_capacity":  {
+                                          "has_service_center":  false,
+                                          "technicians_count":  0,
+                                          "parts_storage_sqm":  0,
+                                          "certifications":  [
+
+                                                             ],
+                                          "average_sla_hours":  0
+                                      },
+        "purchase_plan":  {
+                              "committed_monthly_volume_vnd":  800000000,
+                              "target_products":  [
+                                                      "Thiết bị bếp cao cấp",
+                                                      "Máy rửa bát"
+                                                  ],
+                              "growth_rate_target_quarterly":  "20%"
+                          },
+        "commercial_requests":  {
+                                    "credit_limit_requested_vnd":  600000000,
+                                    "grace_period_days_requested":  45,
+                                    "signboard_support_vnd":  50000000,
+                                    "display_shelf_support":  "Hỗ trợ 5 kệ trưng bày cao cấp"
+                                },
+        "raw_text_summary":  "Hồ sơ đăng ký công ty mới nhưng Mã số thuế (0309988776) và người đại diện (Trần Văn Toàn) trùng khớp 100% với Doanh nghiệp Hoàng Gia đã từng bị đưa vào Blacklist nợ xấu khó đòi năm 2024 tại khu vực miền Nam."
+    }
+]
